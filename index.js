@@ -1,6 +1,58 @@
 const taskContainer = document.querySelector(".task__container");
 
+let globalStore = [];
 
+const generateNewCard = (taskData) =>  `
+<div class="col-md-6 col-lg-4">
+<div class="card ">
+
+<div class="card-header d-flex justify-content-end gap-2">
+ <button type="button" 
+ class="btn btn-outline-success">
+ <i class="fas fa-pencil-alt"></i>
+</button>
+
+<button type="button" 
+ class="btn btn-outline-danger" id=${taskData.id} onclick="deleteCard.apply(this, arguments)">
+ <i class="fas fa-trash-alt"  id=${taskData.id} onclick="deleteCard.apply(this, arguments)"></i>
+</button>
+</div>
+
+<img src=${taskData.imageUrl}
+class="card-img-top" 
+alt="...">
+
+<div class="card-body">
+ <h5 class="card-title">${taskData.taskTitle}</h5>
+ <p class="card-text">
+ ${taskData.taskDescription}</p>
+ <a href="#" class="btn btn-primary">${taskData.taskType}</a>
+</div>
+
+<div class="card-footer">
+ <button type="button" 
+ class="btn btn-outline-primary float-end">Open Task</button>
+</div>
+</div>
+</div>
+`  ;
+
+const loadInitialCardData = () => {
+  //local storage to get tasky card data
+  const getCardData = localStorage.getItem("tasky");
+
+  //convert to normal object
+  const {cards} = JSON.parse(getCardData);
+
+  //loop over those array of task object to create HTML card, inject into DOM
+  cards.map((cardObject) =>{
+    //inject into dom
+    taskContainer.insertAdjacentHTML("beforeend",generateNewCard(cardObject));
+  //update our global store
+    globalStore.push(cardObject);
+
+  } );
+};
 
 const saveChanges = () => {
     const taskData = {
@@ -11,42 +63,38 @@ const saveChanges = () => {
         taskDescription : document.getElementById("taskdescription").value,
     };
 
-    
-         const newCard = `
-         <div class="col-md-6 col-lg-4" id${taskData.id}>
-      <div class="card ">
-       
-        <div class="card-header d-flex justify-content-end gap-2">
-          <button type="button" 
-          class="btn btn-outline-success">
-          <i class="fas fa-pencil-alt"></i>
-         </button>
+   
 
-         <button type="button" 
-          class="btn btn-outline-danger">
-          <i class="fas fa-trash-alt"></i>
-        </button>
-        </div>
+         const newCard =
+
+         taskContainer.insertAdjacentHTML("beforeend",generateNewCard(taskData));
+
+         globalStore.push(taskData);
+         localStorage.setItem("tasky", JSON.stringify({cards:globalStore}));
+
+        };
+
+        const deleteCard = (event) => {
+          event = window.event;
+          //id
+         const targetID = event.target.id;
+          const tagname = event.target.tagName;
+          //match the id of the element with the id inside he global store
+          // if match found remove
         
-        <img src=${taskData.imageUrl}
-        class="card-img-top" 
-        alt="...">
+          globalStore = globalStore.filter((cardObject) =>cardObject.id !== targetID);
+          localStorage.setItem("tasky",  JSON.stringify({cards:globalStore}));
 
-        <div class="card-body">
-          <h5 class="card-title">${taskData.taskTitle}</h5>
-          <p class="card-text">
-          ${taskData.taskDescription}</p>
-          <a href="#" class="btn btn-primary">${taskData.taskType}</a>
-        </div>
+          if (tagname === "BUTTON") {
+            return taskContainer.removeChild(event.target.parentNode.parentNode.parentNode);}
+            else {
+              return taskContainer.removeChild(event.target.parentNode.parentNode.parentNode.parentNode);}
+           
+           
+            };
+
+          
+          
+          
+         
         
-        <div class="card-footer">
-          <button type="button" 
-          class="btn btn-outline-primary float-end">Open Task</button>
-        </div>
-      </div>
-    </div>
-         `  ;
-
-         taskContainer.insertAdjacentHTML("beforeend", newCard)
-
-};
